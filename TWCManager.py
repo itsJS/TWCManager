@@ -634,7 +634,8 @@ while True:
         timeMsgRxStart = time.time()
         while True:
             now = time.time()
-            dataLen = master.getInterfaceModule().getBufferLen()
+            #dataLen = master.getInterfaceModule().getBufferLen()
+            dataLen = -1
             if dataLen == 0:
                 if msgLen == 0:
                     # No message data waiting and we haven't received the
@@ -731,8 +732,7 @@ while True:
                 break
 
         if msgLen >= 16:
-            #msg = unescape_msg(msg, msgLen)
-            msg = ""
+            msg = unescape_msg(msg, msgLen)
             # Set msgLen = 0 at start so we don't have to do it on errors below.
             # len($msg) now contains the unescaped message length.
             msgLen = 0
