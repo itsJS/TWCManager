@@ -11,6 +11,7 @@ class RS485:
     baud = 9600
     enabled = False
     master = None
+    msgBuffer = bytes()
     port = None
     ser = None
     timeLastTx = 0
