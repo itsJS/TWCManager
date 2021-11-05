@@ -99,6 +99,6 @@ class RS485:
         msg = bytearray(b"\xc0" + msg + b"\xc0")
         logger.log(logging.INFO9, "Tx@: " + self.master.hex_str(msg))
 
-        self.ser.write(msg)
+        #self.ser.write(msg)
 
         self.timeLastTx = self.time.time()
