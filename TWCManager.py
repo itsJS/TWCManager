@@ -701,8 +701,8 @@ while True:
             '''
             if msgLen == 0:
                 msg = bytearray()
-            msg += data
-            msgLen += 1
+            #msg += data
+            #msgLen += 1
 
             # Messages are usually 17 bytes or longer and end with \xc0\xfe.
             # However, when the network lacks termination and bias
