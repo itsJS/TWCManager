@@ -9,9 +9,8 @@ class RS485:
     import time
 
     baud = 9600
-    enabled = False
+    enabled = True
     master = None
-    msgBuffer = bytes()
     port = None
     ser = None
     timeLastTx = 0
@@ -60,21 +59,12 @@ class RS485:
         # This function returns the size of the recieve buffer.
         # This is used by read functions to determine if information is waiting
         print("IN WAITING")
-        return self.ser.inWaiting()
+        #return self.ser.inWaiting()
 
     def read(self, len):
         # Read the specified amount of data from the serial interface
+        print("READ")
         #return self.ser.read(len)
-
-        
-        # Read our buffered messages. We simulate this by making a copy of the
-        # current message buffer, clearing the shared message buffer and then
-        # returning the copied message to TWCManager. This is what it would look
-        # like if we read from a serial interface
-        localMsgBuffer = self.msgBuffer
-        self.msgBuffer = None
-        logger.log(logging.INFO9, "Rx@: " + self.master.hex_str(localMsgBuffer))
-        return localMsgBuffer
 
     def send(self, msg):
         # Send msg on the RS485 network. We'll escape bytes with a special meaning,
