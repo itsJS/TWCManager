@@ -731,7 +731,8 @@ while True:
                 break
 
         if msgLen >= 16:
-            msg = unescape_msg(msg, msgLen)
+            #msg = unescape_msg(msg, msgLen)
+            msg = ""
             # Set msgLen = 0 at start so we don't have to do it on errors below.
             # len($msg) now contains the unescaped message length.
             msgLen = 0
