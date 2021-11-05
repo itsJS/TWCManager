@@ -671,6 +671,7 @@ while True:
 
             timeMsgRxStart = now
             timeLastRx = now
+            '''
             if msgLen == 0 and data[0] != 0xC0:
                 # We expect to find these non-c0 bytes between messages, so
                 # we don't print any warning at standard debug levels.
@@ -697,7 +698,7 @@ while True:
                 msg = data
                 msgLen = 1
                 continue
-
+            '''
             if msgLen == 0:
                 msg = bytearray()
             msg += data
