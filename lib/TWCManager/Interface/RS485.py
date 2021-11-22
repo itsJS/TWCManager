@@ -49,7 +49,7 @@ class RS485:
             self.port = porta
 
         # Connect to serial port
-        #self.ser = self.serial.serial_for_url(self.port, self.baud, timeout=0)
+        self.ser = self.serial.serial_for_url(self.port, self.baud, timeout=0)
 
     def close(self):
         # Close the serial interface
@@ -58,13 +58,11 @@ class RS485:
     def getBufferLen(self):
         # This function returns the size of the recieve buffer.
         # This is used by read functions to determine if information is waiting
-        print("IN WAITING")
-        #return self.ser.inWaiting()
+        return self.ser.inWaiting()
 
     def read(self, len):
         # Read the specified amount of data from the serial interface
-        print("READ")
-        #return self.ser.read(len)
+        return self.ser.read(len)
 
     def send(self, msg):
         # Send msg on the RS485 network. We'll escape bytes with a special meaning,
@@ -101,6 +99,6 @@ class RS485:
         msg = bytearray(b"\xc0" + msg + b"\xc0")
         logger.log(logging.INFO9, "Tx@: " + self.master.hex_str(msg))
 
-        #self.ser.write(msg)
+        self.ser.write(msg)
 
         self.timeLastTx = self.time.time()
