@@ -1000,6 +1000,11 @@ class TWCMaster:
         # send slave linkready every 10 seconds whether or not they got master
         # linkready1/2 and if a master sees slave linkready, it will start sending
         # the slave master heartbeat once per second and the two are then connected.
+        print("###DEBUG-MARKER, SENDING")
+        print(bytearray(b"\xFC\xE1")
+            + self.TWCID
+            + self.masterSign
+            + bytearray(b"\x00\x00\x00\x00\x00\x00\x00\x00"))
         self.getInterfaceModule().send(
             bytearray(b"\xFC\xE1")
             + self.TWCID
