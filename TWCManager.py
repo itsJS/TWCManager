@@ -634,8 +634,7 @@ while True:
         timeMsgRxStart = time.time()
         while True:
             now = time.time()
-            #dataLen = master.getInterfaceModule().getBufferLen()
-            dataLen = -1
+            dataLen = master.getInterfaceModule().getBufferLen()
             if dataLen == 0:
                 if msgLen == 0:
                     # No message data waiting and we haven't received the
@@ -671,7 +670,6 @@ while True:
 
             timeMsgRxStart = now
             timeLastRx = now
-            '''
             if msgLen == 0 and data[0] != 0xC0:
                 # We expect to find these non-c0 bytes between messages, so
                 # we don't print any warning at standard debug levels.
@@ -698,11 +696,11 @@ while True:
                 msg = data
                 msgLen = 1
                 continue
-            '''
+
             if msgLen == 0:
                 msg = bytearray()
-            #msg += data
-            #msgLen += 1
+            msg += data
+            msgLen += 1
 
             # Messages are usually 17 bytes or longer and end with \xc0\xfe.
             # However, when the network lacks termination and bias
