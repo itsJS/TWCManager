@@ -9,7 +9,7 @@ class RS485:
     import time
 
     baud = 9600
-    enabled = True
+    enabled = False
     master = None
     port = None
     ser = None

@@ -7,7 +7,7 @@ class Dummy:
 
     import time
 
-    enabled = False
+    enabled = True
     master = None
     msgBuffer = bytes()
     twcID = 1234
