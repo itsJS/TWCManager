@@ -19,7 +19,8 @@ class Dummy:
 
         # Unload if this module is disabled or misconfigured
         if "interface" in master.config and classname in master.config["interface"]:
-            self.enabled = master.config["interface"][classname].get("enabled", True)
+            self.enabled = False
+            #master.config["interface"][classname].get("enabled", True)
         if not self.enabled:
             self.master.releaseModule("lib.TWCManager.Interface", classname)
             return None
