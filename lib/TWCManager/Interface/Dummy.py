@@ -23,6 +23,7 @@ class Dummy:
             print(classname in master.config["interface"])
             print("[DEBUG DUMMY] Unload if this module is disabled or misconfigured")
             self.enabled = master.config["interface"][classname].get("enabled", True)
+            print(master.config["interface"][classname].get("enabled", True))
         if not self.enabled:
             print("[DEBUG DUMMY] RELEASE THIS MODULE")
             self.master.releaseModule("lib.TWCManager.Interface", classname)
