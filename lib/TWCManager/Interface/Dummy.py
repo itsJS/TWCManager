@@ -19,6 +19,8 @@ class Dummy:
 
         # Unload if this module is disabled or misconfigured
         if "interface" in master.config and classname in master.config["interface"]:
+            print("interface" in master.config)
+            print(classname in master.config["interface"])
             print("[DEBUG DUMMY] Unload if this module is disabled or misconfigured")
             self.enabled = master.config["interface"][classname].get("enabled", True)
         if not self.enabled:
