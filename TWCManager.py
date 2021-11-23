@@ -119,6 +119,7 @@ else:
 
 if jsonconfig:
     config = commentjson.load(jsonconfig)
+    print("[DEBUG] We found the Config file")
 else:
     logger.info("Unable to find a configuration file.")
     sys.exit()
