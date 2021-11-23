@@ -9,7 +9,7 @@ class RS485:
     import time
 
     baud = 9600
-    enabled = False
+    enabled = True
     master = None
     port = None
     ser = None
@@ -21,9 +21,10 @@ class RS485:
 
         # Unload if this module is disabled or misconfigured
         if "interface" in master.config and classname in master.config["interface"]:
-            self.enabled = False 
-            #master.config["interface"][classname].get("enabled", True)
+            print("[DEBUG RS485] Unload if this module is disabled or misconfigured")
+            self.enabled = master.config["interface"][classname].get("enabled", True)
         if not self.enabled:
+            print("[DEBUG RS485] RELEASE THIS MODULE")
             self.master.releaseModule("lib.TWCManager.Interface", classname)
             return None
 
