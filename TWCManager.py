@@ -77,7 +77,7 @@ modules_available = [
     "Logging.CSVLogging",
     "Logging.MySQLLogging",
     "Logging.SQLiteLogging",
-    "Interface.Dummy",
+    "Interface.RS485Simulator",
     "Interface.RS485",
     "Interface.TCP",
     "Policy.Policy",
@@ -119,7 +119,6 @@ else:
 
 if jsonconfig:
     config = commentjson.load(jsonconfig)
-    print(config)
 else:
     logger.info("Unable to find a configuration file.")
     sys.exit()
