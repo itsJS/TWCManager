@@ -43,6 +43,7 @@ class MQTTControl:
         # Unload if this module is disabled or misconfigured
         if (not self.status) or (not self.brokerIP):
             self.master.releaseModule("lib.TWCManager.Control", "MQTTControl")
+            print("[DEBUG] MQTTCONTROL MODULE BROKEN OR DISABLED.")
             return None
 
         if self.status:
@@ -76,6 +77,7 @@ class MQTTControl:
                 logger.log(logging.INFO4, "Module enabled but no brokerIP specified.")
 
     def mqttConnect(self, client, userdata, flags, rc):
+        print("[DEBUG] MQTT CONNECTED!!!")
         logger.log(logging.INFO5, "MQTT Connected.")
         logger.log(logging.INFO5, "Subscribe to " + self.topicPrefix + "/#")
         res = self.client.subscribe(self.topicPrefix + "/#", qos=0)
