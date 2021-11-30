@@ -89,6 +89,7 @@ class MQTTControl:
         # [Amps to charge at],[Seconds to charge for]
         # eg. 24,3600
         if message.topic == self.topicPrefix + "/control/chargeNow":
+            print("[DEBUG] MQTT Message called chargeNow")
             payload = str(message.payload.decode("utf-8"))
             logger.log(
                 logging.INFO3, "MQTT Message called chargeNow with payload " + payload
@@ -103,10 +104,12 @@ class MQTTControl:
                 )
 
         if message.topic == self.topicPrefix + "/control/chargeNowEnd":
+            print("[DEBUG] MQTT Message called chargeNowEnd")
             logger.log(logging.INFO3, "MQTT Message called chargeNowEnd")
             self.master.resetChargeNowAmps()
 
         if message.topic == self.topicPrefix + "/control/stop":
+            print("[DEBUG] MQTT Message called stop")
             logger.log(logging.INFO3, "MQTT Message called Stop")
             self._thread.interrupt_main()
 
