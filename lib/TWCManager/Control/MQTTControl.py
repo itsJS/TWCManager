@@ -90,14 +90,19 @@ class MQTTControl:
         # eg. 24,3600
         if message.topic == self.topicPrefix + "/control/chargeNow":
             print("[DEBUG] MQTT Message called chargeNow")
-            payload = str(message.payload.decode("utf-8"))
+            msg = str(message.payload.decode("utf-8"))
+            payload = msg['key']
+            print("[DEBUG] MQTT called chargeNow with payload", payload)
             logger.log(
                 logging.INFO3, "MQTT Message called chargeNow with payload " + payload
             )
             plsplit = payload.split(",", 1)
             if len(plsplit) == 2:
+                print("[DEBUG] REQUESTING TO SET MASTER CHARGE NOW AMPS")
                 self.master.setChargeNowAmps(int(plsplit[0]))
+                print("[DEBUG] REQUESTING TO SET MASTER CHARGE NOW DURN")
                 self.master.setChargeNowTimeEnd(int(plsplit[1]))
+                print("[DEBUG] SUCCESSEFULLY SET MASTER CHARGE NOW AMPS")
             else:
                 logger.info(
                     "MQTT chargeNow command failed: Expecting comma seperated string in format amps,seconds"
