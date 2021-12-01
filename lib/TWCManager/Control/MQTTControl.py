@@ -90,8 +90,7 @@ class MQTTControl:
         # eg. 24,3600
         if message.topic == self.topicPrefix + "/control/chargeNow":
             print("[DEBUG] MQTT Message called chargeNow")
-            msg = str(message.payload.decode("utf-8"))
-            payload = msg['key']
+            payload = str(message.payload.decode("utf-8"))
             print("[DEBUG] MQTT called chargeNow with payload", payload)
             logger.log(
                 logging.INFO3, "MQTT Message called chargeNow with payload " + payload
