@@ -111,6 +111,7 @@ class MQTTControl:
             print("[DEBUG] MQTT Message called chargeNowEnd")
             logger.log(logging.INFO3, "MQTT Message called chargeNowEnd")
             self.master.resetChargeNowAmps()
+            print("[DEBUG] SUCCESSFULLY STOPPED CHARGE NOW.")
 
         if message.topic == self.topicPrefix + "/control/stop":
             print("[DEBUG] MQTT Message called stop")
