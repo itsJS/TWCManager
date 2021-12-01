@@ -98,7 +98,11 @@ class MQTTControl:
             plsplit = payload.split(",", 1)
             if len(plsplit) == 2:
                 print("[DEBUG] REQUESTING TO SET MASTER CHARGE NOW AMPS")
-                self.master.setChargeNowAmps(int(plsplit[0]))
+                
+                #[DEBUG] This if-statement shall be removed once secure connection established.
+                if int(plsplit[0]) > 5 and int(plsplit[0]) <= 16:
+                    print("[DEBUG] TEMPORARY AMPS RANGE SET TO 6A to 16A IN CASE OF NETWORK INTERCEPTION.")
+                    self.master.setChargeNowAmps(int(plsplit[0]))
                 print("[DEBUG] REQUESTING TO SET MASTER CHARGE NOW DURN")
                 self.master.setChargeNowTimeEnd(int(plsplit[1]))
                 print("[DEBUG] SUCCESSEFULLY SET MASTER CHARGE NOW AMPS")
