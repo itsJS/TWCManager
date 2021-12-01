@@ -51,7 +51,7 @@ class MQTTControl:
             # to determine if they represent control messages
             logger.debug("Attempting to Connect")
             if self.brokerIP:
-                self.client = self.mqtt.Client("MQTTCtrl")
+                self.client = self.mqtt.Client("TWCMANAGER_CLIENT")
                 if self.username and self.password:
                     self.client.username_pw_set(self.username, self.password)
                 self.client.on_connect = self.mqttConnect
@@ -59,7 +59,7 @@ class MQTTControl:
                 self.client.on_subscribe = self.mqttSubscribe
                 try:
                     self.client.connect_async(
-                        self.brokerIP, port=self.brokerPort, keepalive=30
+                        self.brokerIP, port=self.brokerPort, keepalive=60
                     )
                 except ConnectionRefusedError as e:
                     logger.log(logging.INFO4, "Error connecting to MQTT Broker")
