@@ -76,7 +76,7 @@ modules_available = [
     "Logging.MySQLLogging",
     "Logging.SQLiteLogging",
     "Protocol.TWCProtocol",
-    "Interface.Dummy",
+    "Interface.RS485Simulator",
     "Interface.RS485",
     "Interface.TCP",
     "Policy.Policy",

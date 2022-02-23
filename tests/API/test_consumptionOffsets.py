@@ -14,7 +14,7 @@ import time
 # Configuration
 skipFailure = 1
 maxRequest = datetime.timedelta(seconds=2)
-dummySettings = {
+RS485SimulatorSettings = {
     "Voltage": 240
 }
 
@@ -92,8 +92,8 @@ values["target"]["wattsSecond"] = 0
 while (not values["target"]["wattsSecond"] or values["target"]["wattsFirst"] == values["target"]["wattsSecond"]):
     values["target"]["wattsSecond"] = random.randint(100, 500)
 
-# Set initial Dummy module settings
-setSetting("DummyModule", dummySettings)
+# Set initial RS485Simulator module settings
+setSetting("RS485SimulatorModule", RS485SimulatorSettings)
 
 # Test 1 - Call addConsumptionOffset with no arguments
 values["expected"]["addConNoArgs"] = 400

@@ -65,7 +65,7 @@ jobs:
         echo "::set-output name=commit::$(git rev-parse --short HEAD)"
         echo "::set-output name=commitint::$(git rev-parse HEAD | tr -d -c 0-9)"
 
-    - name: Set dummy version number in setup.py for publishing unique version
+    - name: Set RS485Simulator version number in setup.py for publishing unique version
       shell: bash
       run: |
         sed -i -E s/'version="(.+)",'/'version="0.0.'${{ steps.vars.outputs.commitint }}'"',/g setup.py

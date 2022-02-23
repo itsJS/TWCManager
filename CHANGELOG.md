@@ -59,7 +59,7 @@ This document logs the changes per release of TWCManager.
 
   * (@ngardiner) - Added SmartPi EMS interface
   * (@Saftwerk, @ngardiner) - Added Volkszahler EMS interface
-  * (@ngardiner) - Added functionality to Dummy module to emulate TWC communication to the point that Policy selection occurs
+  * (@ngardiner) - Added functionality to RS485Simulator module to emulate TWC communication to the point that Policy selection occurs
   * (@MikeBishop) - Implement Policy Shortcut function to allow Charge Now to take immediate effect
   * (@GMerg) - Added OpenWeatherMap EMS interface
   * (@ngardiner) - Added VIN Management functionality, where vehicles can be allowed or denied charging based on VIN. With this, we introduce the ability to define vehicle groups, with future functionality allowing policy settings to be applied to these groups.
@@ -109,7 +109,7 @@ This document logs the changes per release of TWCManager.
       * Fixed the Enphase EMS module which was reporting generation values as consumption (thanks @integlikewoah)
       * Added fix to avoid exception if an incoming TWC message is passed as an immutable bytes object to the unescape_msg function
       * Fix for the Fronius EMS module to query at System context rather than Device context which was failing to work in some installations due to Device ID mismatch
-      * Fix dummy interface to load in place of RS485 interface for testing (thanks @tjikkun)
+      * Fix RS485Simulator interface to load in place of RS485 interface for testing (thanks @tjikkun)
       * Add routines to avoid errors when settings keys are not defined (thanks @tjikkun)
       * Kostal EMS module no longer loads if not configured (thanks @MikeBishop)
 
@@ -154,7 +154,7 @@ This document logs the changes per release of TWCManager.
     * Improved Arrival/Departure detection via the Tesla API (thanks @MikeBishop)
     * Reduced vehicle wake events due to opportunistic wake calls (thanks @MikeBishop)
   * Improved logging system which clearly shows the module which produced the log message and the log priority.
-  * Completed the modularization of the RS485 interface code to allow alternative interfaces, and introduced two new interface modules (Dummy and TCP)
+  * Completed the modularization of the RS485 interface code to allow alternative interfaces, and introduced two new interface modules (RS485Simulator and TCP)
   * Ensure that status output formula balances for improved readability (thanks @MikeBishop)
   * Formatting improvements for the built-in webserver
   * Add policy webhook support (thanks @MikeBishop)
