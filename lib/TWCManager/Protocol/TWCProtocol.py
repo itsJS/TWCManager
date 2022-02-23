@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__.rsplit(".")[-1])
 class TWCProtocol:
 
     # To avoid a situation where we would have to re-implement TWCManager logic to parse the
-    # same messages both for the Dummy interface and for the Slave TWCManager mode, we break out
+    # same messages both for the RS485Simulator interface and for the Slave TWCManager mode, we break out
     # parsing of the protocol to this module.
 
     # The operationMode parameter determines which mode the parser operates in:

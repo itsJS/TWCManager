@@ -35,7 +35,7 @@ To enable TWCManager to gather the solar generation information that it requires
 ### Communication Interfaces
 | Platform                                 | Details                 |
 | ---------------------------------------- | ----------------------- |
-| [Dummy](docs/modules/Interface_Dummy.md) | Interface to simulate a TWC device for testing   |
+| [RS485Simulator](docs/modules/Interface_RS485Simulator.md) | Interface to simulate a TWC device for testing   |
 | [RS485](docs/modules/Interface_RS485.md) | Communicate over RS485 Serial or basic TCP communications |
 | [TCP](docs/modules/Interface_TCP.md)     | Communicate over more complex TCP network channels (In Development) |
 
