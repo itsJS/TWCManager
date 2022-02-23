@@ -1,7 +1,6 @@
 import logging
-from ww import f
 
-logger = logging.getLogger(__name__.rsplit(".")[-1])
+logger = logging.getLogger("\U0001F3AE MQTT")
 
 
 class MQTTControl:
@@ -11,7 +10,7 @@ class MQTTControl:
 
     brokerIP = None
     brokerPort = 1883
-    client = None
+    __client = None
     config = None
     configConfig = None
     configMQTT = None
@@ -51,15 +50,15 @@ class MQTTControl:
             # to determine if they represent control messages
             logger.debug("Attempting to Connect")
             if self.brokerIP:
-                self.client = self.mqtt.Client("TWCMANAGER_CLIENT")
+                self.__client = self.mqtt.Client("MQTTCtrl")
                 if self.username and self.password:
-                    self.client.username_pw_set(self.username, self.password)
-                self.client.on_connect = self.mqttConnect
-                self.client.on_message = self.mqttMessage
-                self.client.on_subscribe = self.mqttSubscribe
+                    self.__client.username_pw_set(self.username, self.password)
+                self.__client.on_connect = self.mqttConnect
+                self.__client.on_message = self.mqttMessage
+                self.__client.on_subscribe = self.mqttSubscribe
                 try:
-                    self.client.connect_async(
-                        self.brokerIP, port=self.brokerPort, keepalive=60
+                    self.__client.connect_async(
+                        self.brokerIP, port=self.brokerPort, keepalive=30
                     )
                 except ConnectionRefusedError as e:
                     logger.log(logging.INFO4, "Error connecting to MQTT Broker")
@@ -71,7 +70,7 @@ class MQTTControl:
                     return False
 
                 self.connectionState = 1
-                self.client.loop_start()
+                self.__client.loop_start()
 
             else:
                 logger.log(logging.INFO4, "Module enabled but no brokerIP specified.")
@@ -80,7 +79,7 @@ class MQTTControl:
         print("[DEBUG] MQTT CONNECTED!!!")
         logger.log(logging.INFO5, "MQTT Connected.")
         logger.log(logging.INFO5, "Subscribe to " + self.topicPrefix + "/#")
-        res = self.client.subscribe(self.topicPrefix + "/#", qos=0)
+        res = self.__client.subscribe(self.topicPrefix + "/#", qos=0)
         logger.log(logging.INFO5, "Res: " + str(res))
 
     def mqttMessage(self, client, userdata, message):
@@ -106,6 +105,8 @@ class MQTTControl:
                 print("[DEBUG] REQUESTING TO SET MASTER CHARGE NOW DURN")
                 self.master.setChargeNowTimeEnd(int(plsplit[1]))
                 print("[DEBUG] SUCCESSEFULLY SET MASTER CHARGE NOW AMPS")
+                self.master.getModuleByName("Policy").applyPolicyImmediately()
+                self.master.queue_background_task({"cmd": "saveSettings"})
             else:
                 logger.info(
                     "MQTT chargeNow command failed: Expecting comma seperated string in format amps,seconds"
@@ -116,6 +117,8 @@ class MQTTControl:
             logger.log(logging.INFO3, "MQTT Message called chargeNowEnd")
             self.master.resetChargeNowAmps()
             print("[DEBUG] SUCCESSFULLY STOPPED CHARGE NOW.")
+            self.master.getModuleByName("Policy").applyPolicyImmediately()
+            self.master.queue_background_task({"cmd": "saveSettings"})
 
         if message.topic == self.topicPrefix + "/control/stop":
             print("[DEBUG] MQTT Message called stop")

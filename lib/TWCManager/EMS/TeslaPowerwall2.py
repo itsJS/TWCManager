@@ -1,8 +1,6 @@
 # Tesla Powerwall 2 EMS Module
 import logging
-
-from ww import f
-
+import time
 
 logger = logging.getLogger(__name__.rsplit(".")[-1])
 
@@ -10,7 +8,6 @@ logger = logging.getLogger(__name__.rsplit(".")[-1])
 class TeslaPowerwall2:
 
     import requests
-    import time
     import urllib3
     import json as json
 
@@ -122,7 +119,7 @@ class TeslaPowerwall2:
         # the login details to the Powerwall API, and get an authentication token.
         # If we already have an authentication token, we just use that.
         if self.password is not None:
-            if self.tokenTimeout < self.time.time():
+            if self.tokenTimeout < time.time():
                 logger.log(logging.INFO6, "Logging in to Powerwall API")
                 headers = {"Content-Type": "application/json"}
                 data = {
@@ -149,7 +146,7 @@ class TeslaPowerwall2:
                     return False
 
                 # Time out token after one hour
-                self.tokenTimeout = self.time.time() + (60 * 60)
+                self.tokenTimeout = time.time() + (60 * 60)
 
                 # After authentication, start Powerwall
                 # If we don't do this, the Powerwall will stop working after login
@@ -159,7 +156,7 @@ class TeslaPowerwall2:
                 logger.log(
                     logging.INFO6,
                     "Powerwall2 API token still valid for "
-                    + str(self.tokenTimeout - self.time.time())
+                    + str(self.tokenTimeout - time.time())
                     + " seconds.",
                 )
 
@@ -178,7 +175,7 @@ class TeslaPowerwall2:
             logger.debug("Powerwall2 EMS Module Disabled. Skipping getGeneration")
             return 0
 
-        if self.batteryLevel > (self.minSOE * 1.05) and self.importW < 900:
+        if self.batteryLevel > (self.minSOE * 1.05):
             self.suppressGeneration = False
         if self.batteryLevel < (self.minSOE * 0.95):
             self.suppressGeneration = True
@@ -189,10 +186,6 @@ class TeslaPowerwall2:
         if self.suppressGeneration:
             return 0
 
-        # Don't take effect immediately, in case it's a temporary blip.
-        if self.importW > 1000:
-            self.suppressGeneration = True
-
         # Return generation value
         return float(self.generatedW)
 
@@ -202,7 +195,7 @@ class TeslaPowerwall2:
             self.lastFetch[path] if path in self.lastFetch else (0, dict())
         )
 
-        if (int(self.time.time()) - lastTime) > self.cacheTime:
+        if (int(time.time()) - lastTime) > self.cacheTime:
 
             # Fetch the specified URL from Powerwall and return the data
 
@@ -219,9 +212,8 @@ class TeslaPowerwall2:
                 r.raise_for_status()
             except Exception as e:
                 if hasattr(e, "response") and e.response.status_code == 403:
-                    logger.info(
-                        "Authentication required to access local Powerwall API"
-                    )
+                    logger.info("Authentication required to access local Powerwall API")
+                    self.tokenTimeout = 0
                 else:
                     logger.log(
                         logging.INFO4,
@@ -231,7 +223,7 @@ class TeslaPowerwall2:
                 return lastData
 
             lastData = r.json()
-            self.lastFetch[path] = (self.time.time(), r.json())
+            self.lastFetch[path] = (time.time(), r.json())
 
         return lastData
 
@@ -251,14 +243,14 @@ class TeslaPowerwall2:
         carapi = self.master.getModuleByName("TeslaAPI")
         token = carapi.getCarApiBearerToken()
         expiry = carapi.getCarApiTokenExpireTime()
-        now = self.time.time()
+        now = time.time()
         key = "CLOUD/live_status"
 
         (lastTime, lastData) = (
             self.lastFetch[key] if key in self.lastFetch else (0, dict())
         )
 
-        if (int(self.time.time()) - lastTime) > self.cloudCacheTime:
+        if (int(time.time()) - lastTime) > self.cloudCacheTime:
 
             if token and now < expiry:
                 headers = {
@@ -291,14 +283,12 @@ class TeslaPowerwall2:
                             "Multiple Powerwall sites linked to your Tesla account.  Please specify the correct site ID in your config.json."
                         )
                         for (site, name) in products:
-                            logger.info(f("   {site}: {name}"))
+                            logger.info(f"   {site}: {name}")
                     else:
                         logger.info("Couldn't find a Powerwall on your Tesla account.")
 
                 if self.cloudID:
-                    url = f(
-                        "https://owner-api.teslamotors.com/api/1/energy_sites/{self.cloudID}/live_status"
-                    )
+                    url = f"https://owner-api.teslamotors.com/api/1/energy_sites/{self.cloudID}/live_status"
                     bodyjson = None
                     result = dict()
 

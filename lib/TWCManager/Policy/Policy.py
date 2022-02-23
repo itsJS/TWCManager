@@ -1,9 +1,8 @@
 import logging
 import time
-from ww import f
 
 
-logger = logging.getLogger(__name__.rsplit(".")[-1])
+logger = logging.getLogger("\u26FD Policy")
 
 
 class Policy:
@@ -47,7 +46,7 @@ class Policy:
             "name": "Track Green Energy",
             "match": ["tm_hour", "tm_hour", "settings.hourResumeTrackGreenEnergy"],
             "condition": ["gte", "lt", "lte"],
-            "value": [6, 20, "tm_hour"],
+            "value": ["settings.sunrise", "settings.sunset", "tm_hour"],
             "background_task": "checkGreenEnergy",
             "allowed_flex": "config.greenEnergyFlexAmps",
             "charge_limit": "config.greenEnergyLimit",
@@ -127,6 +126,10 @@ class Policy:
             if policy_engine:
                 if policy_engine.get("policyCheckInterval"):
                     self.policyCheckInterval = policy_engine.get("policyCheckInterval")
+
+    def applyPolicyImmediately(self):
+        self.lastPolicyCheck = 0
+        self.setChargingPerPolicy()
 
     def setChargingPerPolicy(self):
         # This function is called for the purpose of evaluating the charging
@@ -298,9 +301,7 @@ class Policy:
 
         logger.log(
             logging.INFO8,
-            f(
-                "Evaluating Policy match (%s [{matchValue}]), condition (%s), value (%s)"
-            ),
+            f"Evaluating Policy match (%s [{matchValue}]), condition (%s), value (%s)",
             match,
             condition,
             value,

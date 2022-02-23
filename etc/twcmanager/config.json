@@ -63,6 +63,11 @@
         # rates really does.
         "minAmpsPerTWC": 12,
 
+        # If the system rapidly changes its mind about whether to start or stop charging,
+        # this parameter keeps charging / not charging until the decision remains stable
+        # for this many seconds.
+        #"startStopDelay": 60,
+
         # When you have more than one vehicle associated with the Tesla car API and
         # onlyChargeMultiCarsAtHome = True, cars will only be controlled by the API when
         # parked at home. For example, when one vehicle is plugged in at home and
@@ -84,28 +89,10 @@
 
         # As I observed different reactive power changing with the the amps used,
         # I introduce a real power variable for minAmps and maxAmps
-        # For my installation there was 0.90 at 6 amps and 0.93 at 20 amps. 
-        # You can comment that in, if you want to try this.        
+        # For my installation there was 0.90 at 6 amps and 0.93 at 20 amps.
+        # You can comment that in, if you want to try this.
         # "realPowerFactorMinAmps": 0.9,
         # "realPowerFactorMaxAmps": 0.93,
-
-        # When determining how much green energy is available for charging, we count
-        # greenEnergyAmpsOffset as consumption. This is most often given a value
-        # equal to the average amount of power consumed by everything other than car
-        # charging. For example, if your house uses an average of 2.8A to power
-        # computers, lights, etc while you expect the car to be charging, set
-        # greenEnergyAmpsOffset = 2.8.
-        #
-        # If you have solar panels, look at your utility meter while your car charges.
-        # If it says you're using 0.67kW, that means you should set
-        # greenEnergyAmpsOffset = 0.67kW * 1000 / 240V = 2.79A assuming you're on the
-        # North American 240V grid. In other words, during car charging, you want your
-        # utility meter to show a value close to 0kW meaning no energy is being sent to
-        # or from the grid.
-        #
-        # If you are able to obtain consumption details from an energy management system,
-        # this value can be set to 0 unless you wish to manually adjust what it returns.
-        "greenEnergyAmpsOffset": 0,
 
         # If green energy dips below the target charge amount while already charging,
         # how much extra current should be drawn to keep charging?  This avoids frequently
@@ -214,6 +201,7 @@
         # The dummy module is used for testing. It will simulate an actual
         # slave TWC for the purpose of offline testing of TWCManager.
         # Most people would not enable this module.
+        # This should be a two-byte ID
         "twcID": "AB"
       },
       "RS485": {
@@ -223,21 +211,33 @@
         # oscilloscope. Don't change this unless something changes in future hardware.
         "baud": 9600,
 
-        # Most users will have only one ttyUSB adapter plugged in and the default value
-        # of '/dev/ttyUSB0' below will work. If not, run 'dmesg |grep ttyUSB' on the
-        # command line to find your rs485 adapter and put its ttyUSB# value in the
-        # parameter below.
+        # Most users will have only one ttyUSB adapter plugged in and
+        # '/dev/ttyUSB0' will work. If not, run 'dmesg |grep ttyUSB' on the
+        # command line to find your rs485 adapter
         # If you're using a non-USB adapter like an RS485 shield, the value may need to
         # be something like '/dev/serial0'.
         "port": "/dev/ttyUSB0"
 
+        # Note that the RS485 module can also handle simple raw or rfc2217
+        # TCP connections. If your requirements are simple, you could use
+        # a URL such as:
+        # "port": "rfc2217://<host>:<port>"     or
+        # "port": "socket://<host>:<port>"
+
       },
       "TCP": {
-        "enabled": false
+        "enabled": false,
 
+        # NOTE: This interface is in active development. Please use the RS485
+        # interface instead
         # The TCP module allows communications over a TCP listener or client
         # socket. This can be used to integrate with network-based RS485
         # interfaces.
+
+        # Listen determines if we open a listening socket or connect to
+        # the server address below.
+        "listen": false,
+        "server": "192.168.1.2"
       }
     },
     "control": {
@@ -251,7 +251,12 @@
         "topicPrefix": "TWC",
         "username": "mqttuser",
         "password": "mqttpass"
+      },
+      "OCPP": {
+          "enabled": false,
+          "serverPort": 9000
       }
+
     },
 
     # In the below policy segment of the configuration, we can tune the behaviour
@@ -335,7 +340,7 @@
       #   "value": [ 1 ],
       #   "charge_amps": "settings.scheduledAmpsMax",
       #   "charge_limit": "config.scheduledLimit" },
-  
+
       # { "name": "Track Green Energy",
       #   "match": [ "tm_hour", "tm_hour", "settings.hourResumeTrackGreenEnergy" ],
       #   "condition": [ "gte", "lt", "lte" ],
@@ -372,7 +377,7 @@
           # In the example below, charge sessions are logged, but not the
           # regular charger status messages. These are valid under any of the
           # logging modules
-          # For the debug output, you can mute Log Levels greater than the 
+          # For the debug output, you can mute Log Levels greater than the
           # value specified here.
           "mute":{
               "ChargeSessions": false,
@@ -390,7 +395,7 @@
           # In the example below, charge sessions are logged, but not the
           # regular charger status messages. These are valid under any of the
           # logging modules
-          # For the debug output, you can mute Log Levels greater than the 
+          # For the debug output, you can mute Log Levels greater than the
           # value specified here.
           "mute":{
               "ChargeSessions": false,
@@ -398,7 +403,7 @@
               "SlavePower": false,
               "SlaveStatus": false,
               "DebugLogLevelGreaterThan": 1
-          }                 
+          }
         },
         "CSV": {
             "enabled": false,
@@ -414,12 +419,13 @@
                 "ChargeSessions": false,
                 "GreenEnergy": true,
                 "SlavePower": true,
-                "SlaveStatus": true,
+                "SlaveStatus": true
             }
         },
         "MySQL": {
             "enabled": false,
             "host": "1.2.3.4",
+            "port": 3306,
             "database": "twcmanager",
             "username": "twcmanager",
             "password": "twcmanager"
@@ -439,6 +445,11 @@
         # configured simultaneously, currently we will only add together the values recieved from each. This might be
         # useful if you have one interface that provides generation detail and another that provides consumption
         # detail, but if both systems provided both values, it would be duplicated.
+      # The Efergy server allows fetching of consumption from https://engage.efergy.com/ token is needed
+        "Efergy": {
+            "enabled": false,
+            "token": "abcd1234"
+        },
         "Enphase": {
             "enabled": false,
 
@@ -459,6 +470,18 @@
             "enabled": false,
             "serverIP": "192.168.1.2"
         },
+        # Growatt: Uses a Growatt pypi package to very easily pull the data
+        # useBatteyAt describes at whihc SOC the system will add the battery's maxOutput to the pool of available power
+        # batteryMaxOutput is the maximum watt that the battery will output calculated by dividing battery Wh in two,
+        # in my case that's 9600wh and half of that is 4800
+        "Growatt": {
+            "enabled": false,
+            "username":"username",
+      	    "password":"password",
+	          "useBatteryAt":"80",
+	          "batteryMaxOutput":"4800",
+	          "useBatteryBefore":"15:00"
+        },
         "HASS": {
       # The HASS module allows fetching of consumption and generation statistics from HomeAssistant sensors.
             "enabled": false,
@@ -466,7 +489,7 @@
       # The IP address and port of the HomeAssistant front-end
             "serverIP": "192.168.1.1",
             "serverPort": "8123",
-            "useHttps": false,            
+            "useHttps": false,
 
       # To obtain a HASS API key, via browser, click on your user profile, and
       # add a Long-Lived Access Token. Place it in the following variable:
@@ -480,10 +503,42 @@
             "hassEntityConsumption": "sensor.meter_power_live",
             "hassEntityGeneration":  "sensor.inverter_power_live"
         },
+        "IotaWatt": {
+      # The IotaWatt module allows fetching of consumption and generation statistics from IotaWatt outputs.
+            "enabled": false,
+
+      # The IP address of the IotaWatt front-end
+            "serverIP": "192.168.1.1",
+
+      # For IotaWatt, the two settings below must be customized to point to the specific outputs
+      # you have created. There is no default or common value for this, so it will require customization to
+      # work correctly. If you do not track one of these values (generation or consumption) via IotaWatt,
+      # leave the parameter blank, and it will not be retrieved.
+            "outputConsumption": "Total_Consumption",
+            "outputGeneration":  "Solar"
+        },
         "MQTT": {
       # MQTT Sensor support for reading generation or consumption data.
       # This is not yet available.
           "enabled": false
+        },
+        "P1Monitor":{
+          # Support for P1 Monitor API (https://www.ztatz.nl/)
+          # Reads /api/v1/phase
+          "enabled": false,
+          "serverIP":"192.168.1.2",
+          # Amount of samples to take average from (min 1, max 10, default 1)
+          "samples": 1
+        },
+        "OpenWeatherMap": {
+            "enabled": false,
+            #your position on earth, use maps.google and copy from the URL parameters after the @ sign
+            "Latitude": 41.870978,
+            "Longitude": 11.853508,
+            #APIKey from https://openweathermap.org/
+            "APIKey": "xyz-EDIT-ME-xyz",
+            #a 12 items array with the best kW reached on a day in that month
+            "PeakKW": [2, 4, 6, 6, 6.5, 6.9, 6.5, 6.0, 5.5, 4.5, 3, 2]
         },
       # Tesla Powerwall2
       # This module fetches both consumption and solar generation details
@@ -492,7 +547,7 @@
           "serverIP": "192.168.1.2",
       # Password is required starting in firmware 20.49.0
           "password": "test123",
-      # The following value specifies the minimum battery level of the 
+      # The following value specifies the minimum battery level of the
       # Powerwall2 before the car will be able to charge. This avoids a
       # situation where the battery level is low due to low generation, and the
       # battery is then further depleted by the vehicle charging.
@@ -503,6 +558,11 @@
           "username": "username",
           "password": "password",
           "serialNumber": "ABC1234"
+        },
+        "SmartPi": {
+          "enabled": false,
+          "serverIP": "192.168.1.2",
+          "serverPort": "1080"
         },
       # SolarEdge API, consumed from the internet-based SolarEdge Potal
         "SolarEdge": {
@@ -517,7 +577,7 @@
           "enabled": false,
           "serverIP": "192.168.1.2",
           "excludeConsumptionInverters": [ 2 ] #Array of indices of reading devices - to exclude consumption from. Needed if e.g. a boiler only heats with solar overhead - and you want to override this one.
-        },        
+        },
       # The energy detective
         "TED": {
           "enabled": false,
@@ -533,13 +593,28 @@
           "serverIP": "192.168.1.2",
           "serverPort": "8080"
         },
-      # The Efergy server allows fetching of consumption from https://engage.efergy.com/ token is needed
-        "Efergy": {
-            "enabled": false,
-            "token": "xx"
+        "Volkszahler": {
+          "enabled": false,
+          # Yes, you can install TWCManager on same raspi as Volkszäher. (this needs to change "control" > "listenPort" to 8181)
+          "serverIP": "127.0.0.1",
+          # Port of Volkszahler frontend (not from VZLOGGER).
+          "serverPort": "80",
+          # Generation in Watt as positive values.
+          "uuidPhotovoltaikW": "00000006-0002-1570-ffff-0123456789ab",
+          # Consumption from grid as positive values or Push to grid as negative values.
+          "uuidTotalGridW": "1cbbe494-a049-11eb-bcbc-0242ac130002"
+        },
+        # The URL module allows fetching of consumption and generation data from URL items.
+        # If you do not track one of these values (generation or consumption) via URL, leave
+        # the parameter blank, and it will not be retrieved.
+        # Full URLs should use format http[s]://abc/def/[consumptionItemValue|generationItemValue]
+        "URL": {
+          "enabled": false,
+          "url": "http(s)://your/base/url/without/slash/at/end",
+          "consumptionItem": "Consumption item name",
+          "generationItem": "Generation item name"
         }
-
-    },
+      },
 
     # Status plugins allow us to export status detail out of TWCManager.
     # This will use interfaces such as MQTT or HomeAssistant API to update status for charging, power draw, etc.
@@ -550,17 +625,17 @@
             "serverIP": "192.168.1.1",
             "serverPort": "8123",
             "useHttps": false,
-      
+
       # Perform rate limiting first (as there are some very chatty topics).
       # For each message that comes through, we take the sensor name and check
       # when we last updated it. If it was less than msgRateInSeconds
       # seconds ago, we send it later.
             "msgRateInSeconds": 60,
-      
-      # Resends the last sensor value at least once every resendRateInSeconds, 
+
+      # Resends the last sensor value at least once every resendRateInSeconds,
       # so HASS does not forget the value ;-)
             "resendRateInSeconds": 3600,
-      
+
       # In case of errors, after how many seconds it the logic should try to resend
       # the status
             "retryRateInSeconds": 60,
@@ -571,13 +646,33 @@
         },
         "MQTT": {
             "enabled": true,
-            "brokerIP": "192.168.0.100",
-            "topicPrefix": "TWC"
+            "brokerIP": "192.168.1.1",
+            "topicPrefix": "TWC",
+
+       # By default we rate-limit per-topic to avoid excessive load on the MQTT server. You are free to reduce the
+       # rate limit value as low as you'd like - zero will disable rate limiting altogether. The default is one
+       # update per topic every 60 seconds
+            "ratelimit": 60,
 
        # Username and password are optional. If your broker requires a username and password to authenticate
        # clients, set them here. Otherwise, leave them commented out
           #  "username": "mqttuser",
           #  "password": "mqttpass"
+        }
+    },
+    "vehicle": {
+        "TeslaMate": {
+            "enabled": false,
+            "syncTokens": false,
+            "db_host": "192.168.1.1",
+            "db_name": "teslamate",
+            "db_pass": "teslamate",
+            "db_user": "teslamate",
+            "syncTelemetry": false,
+            "mqtt_host": "192.168.1.1",
+            "mqtt_user": "teslamate",
+            "mqtt_pass": "teslamate",
+            "mqtt_prefix": "teslamate"
         }
     }
 }

@@ -1,40 +1,10 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
-################################################################################
-# Code and TWC protocol reverse engineering by Chris Dragon.
-#
-# Additional logs and hints provided by Teslamotorsclub.com users:
-#   TheNoOne, IanAmber, and twc.
-# Thank you!
-#
-# For support and information, please read through this thread:
-# https://teslamotorsclub.com/tmc/threads/new-wall-connector-load-sharing-protocol.72830
-#
-# Report bugs at https://github.com/ngardiner/TWCManager/issues
-#
-# This software is released under the "Unlicense" model: http://unlicense.org
-# This means source code and TWC protocol knowledge are released to the general
-# public free for personal or commercial use. I hope the knowledge will be used
-# to increase the use of green energy sources by controlling the time and power
-# level of car charging.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# For more information, please visit http://unlicense.org
-
-import commentjson
-import importlib
-import json
-import logging
-import os.path
-import math
-import re
+import os
+import grp
+import pwd
 import sys
+<<<<<<< HEAD
 import time
 import traceback
 from datetime import datetime
@@ -1470,35 +1440,40 @@ while True:
                             voltsPhaseC,
                         )
                     )
+=======
+>>>>>>> development
 
-                if foundMsgMatch == False:
-                    logger.info("***UNKNOWN MESSAGE from master: " + hex_str(msg))
+# If we are being run as root, drop privileges to twcmanager user
+# This avoids any potential permissions issues if it is run as root and settings.json is created as root
+if os.getuid() == 0:
+    user = "twcmanager"
+    groups = [g.gr_gid for g in grp.getgrall() if user in g.gr_mem]
 
-    except KeyboardInterrupt:
-        logger.info("Exiting after background tasks complete...")
-        break
+    _, _, uid, gid, gecos, root, shell = pwd.getpwnam(user)
+    groups.append(gid)
+    os.setgroups(groups)
+    os.setgid(gid)
+    os.setuid(uid)
 
-    except Exception as e:
-        # Print info about unhandled exceptions, then continue.  Search for
-        # 'Traceback' to find these in the log.
-        traceback.print_exc()
-        logger.info("Unhandled Exception:" + traceback.format_exc())
-        # Sleep 5 seconds so the user might see the error.
-        time.sleep(5)
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + "/lib")
 
-# Make sure any volatile data is written to disk before exiting
-master.queue_background_task({"cmd": "saveSettings"})
+# Remove any local local path references in sys.path, otherwise we'll
+# see an error when we try to import TWCManager.TWCManager, as it will see
+# us (TWCManager.py) instead of the package (lib/TWCManager) and fail.
+if "" in sys.path:
+    sys.path.remove("")
 
-# Wait for background tasks thread to finish all tasks.
-# Note that there is no such thing as backgroundTasksThread.stop(). Because we
-# set the thread type to daemon, it will be automatically killed when we exit
-# this program.
-master.backgroundTasksQueue.join()
+if "." in sys.path:
+    sys.path.remove(".")
 
-# Close the input module
-master.getInterfaceModule().close()
+if os.path.dirname(os.path.realpath(__file__)) in sys.path:
+    sys.path.remove(os.path.dirname(os.path.realpath(__file__)))
 
+<<<<<<< HEAD
 #
 # End main program
 #
 ##############################
+=======
+import TWCManager.TWCManager
+>>>>>>> development

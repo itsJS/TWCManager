@@ -2,15 +2,14 @@
 # Publishes the provided sensor key and value pair to a HomeAssistant instance
 
 import logging
-from ww import f
+import time
 
 
-logger = logging.getLogger(__name__.rsplit(".")[-1])
+logger = logging.getLogger("\U0001F4CA HASS")
 
 
 class HASSStatus:
 
-    import time
     import threading
     import requests
 
@@ -75,11 +74,11 @@ class HASSStatus:
 
     def background_task_thread(self):
         while True:
-            self.time.sleep(self.msgRateInSeconds)
+            time.sleep(self.msgRateInSeconds)
             self.backgroundTasksLock.acquire()
             for msgKey in self.msgQueue:
                 msg = self.msgQueue[msgKey]
-                if msg.elapsingTime < self.time.time():
+                if msg.elapsingTime < time.time():
                     self.sendingStatusToHASS(msg)
             self.backgroundTasksLock.release()
 
@@ -91,7 +90,7 @@ class HASSStatus:
         sensor = self.getSensorName(twcid, key_underscore)
         if (sensor not in self.msgQueue) or (self.msgQueue[sensor].value != value):
             self.msgQueue[sensor] = HASSMessage(
-                self.time.time(),
+                time.time(),
                 sensor,
                 twcid,
                 key_underscore,
@@ -112,14 +111,22 @@ class HASSStatus:
         try:
             logger.log(
                 logging.INFO8,
-                f(
-                    "Sending POST request to HomeAssistant for sensor {msg.sensor} (value {msg.value})."
-                ),
+                f"Sending POST request to HomeAssistant for sensor {msg.sensor} (value {msg.value}).",
             )
 
             devclass = ""
-            if str.upper(msg.unit) in ["W", "A", "V", "KWH"]:
+            state_class = ""
+            if msg.unit in ["W", "kW"]:
                 devclass = "power"
+            elif msg.unit in ["Wh", "kWh", "MWh"]:
+                devclass = "energy"
+                state_class = "total"
+            elif msg.unit == "A":
+                devclass = "current"
+                state_class = "measurement"
+            elif msg.unit == "V":
+                devclass = "voltage"
+                state_class = "measurement"
 
             if len(msg.unit) > 0:
                 self.requests.post(
@@ -129,6 +136,7 @@ class HASSStatus:
                         "attributes": {
                             "unit_of_measurement": msg.unit,
                             "device_class": devclass,
+                            "state_class": state_class,
                             "friendly_name": "TWC "
                             + str(self.getTwident(msg.twcid))
                             + " "
@@ -155,7 +163,7 @@ class HASSStatus:
                 )
             # Setting elapsing time to now + resendRateInSeconds
             self.msgQueue[msg.sensor].elapsingTime = (
-                self.time.time() + self.resendRateInSeconds
+                time.time() + self.resendRateInSeconds
             )
         except self.requests.exceptions.ConnectionError as e:
             logger.log(
@@ -183,9 +191,7 @@ class HASSStatus:
 
     def settingRetryRate(self, msg):
         # Setting elapsing time to now + retryRateInSeconds
-        self.msgQueue[msg.sensor].elapsingTime = (
-            self.time.time() + self.retryRateInSeconds
-        )
+        self.msgQueue[msg.sensor].elapsingTime = time.time() + self.retryRateInSeconds
 
 
 class HASSMessage:

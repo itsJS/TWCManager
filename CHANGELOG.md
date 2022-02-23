@@ -2,7 +2,80 @@
 
 This document logs the changes per release of TWCManager.
 
-## v1.2.2 - Current development branch
+## v1.2.5 - Latest Development Version
+
+  * Bugfixes:
+     * Fix debug settings form issues
+  * (@ngardiner) - Add support for multiple Fronius inverters
+  * (@MikeBishop) - Add support for detecting sunrise and sunset times based on home location using sunrise-sunset.org API
+
+## v1.2.4 - 2022-02-15
+
+  * **Breaking Changes**
+      * Due to changes introduced by Python 3.9, the minimum version of Python supported from v1.2.4 forward is **Python 3.6**
+          * This means that v1.2.3 is the end of the line for Debian Stretch based machines - upgrade to buster to use v1.2.4 and above.
+      * The configuration parsing engine has been changed to PyYAML
+          * This may cause your config file to stop parsing correctly. If so, my apologies, however it does allow us to support both JSON and YAML formats going forward.
+  * Bugfixes:
+      * (@MikeBishop) - Fix debounce mechanism to avoid continuous charging when minimum generation is not met in some circumstances
+      * (@ngardiner) - Align web interface TWCID so that it is lowercase, avoiding issues with JavaScript and Jinja2 misalignment
+      * (@ngardiner) - Change cryptography module dependency to avoid versions requiring rust compiler (no module named setuptools_rust error)
+      * (@ngardiner) - Add logic to set token expiry time when manually adding tokens
+      * (@blach) - Fix Tesla API token refresh logic
+ * (@MikeBishop) - Change to Powerwall Auth handling to expire auth tokens earlier due to changes in Powerwall auth handling
+ * (@ngardiner) - Add version check to Web UI
+ * (@ngardiner) - Add handling of recaptcha challenge (with DNS workaround), and provide other options if this is not possible
+ * (@ngardiner) - Add Tesla API debug interface to allow sending Tesla API commands
+ * (@ngardiner) - Added TeslaMate sync functionality to allow sync of telemetry and API token details
+ * (@ngardiner) - In line with changes made by setuptools team to deprecate setup.py as command line tool, switched to native python build tools
+ * (@MikeBishop) - Restrict dampening to green policies only, and prefer to keep charging vs stop/start
+ * (@ngardiner) - Reduce potential Tesla API backoff time
+ * (@deece) - Addition of Open Energy Monitor EMS module
+ * (@dehsgr) - Addition of URL EMS module
+ * (@tjikkun) - Set HASS sensor state class to make it work with statistics dashboard
+
+## v1.2.3 - 2021-08-10
+
+  * **NOTE**: v1.2.3 contains a potentially breaking change for users of OpenWB or the Legacy Web Interface
+     * As of v1.2.3, the Legacy Web Interface and its dependencies such as lighttpd and php are no longer installed by default.
+     * Please see the documentation for instructions on how to install it, if required. Most users will not need this.
+  * **NOTE**: Starting from v1.2.3, Modern theme is the default theme for TWCManager, unless configured otherwise.
+  * **NOTE**: v1.2.3 introduces a dedicated user account for TWCManager. For Manual install, you'll need to run ```make install``` after upgrading.
+  * (@Saftwerk) - Add both Generation and Consumption support to Volkszahler EMS module
+  * (@VIDGuide) - Improvements to the Modern UI - Show charger load and offered amps, and open GitHub link in a new window.
+  * (@VIDGuide) - Add SoC % to Modern UI interface, and display charge time indicator per TWC
+  * (@VIDGuide) - Fixed Modern UI layout on mobile, added Stop Charge Now button and fixed Charge Now control spacing.
+  * (@VIDGuide) - Add Timezone parameter to docker-compose files to allow specifying container timezone
+  * (@the-dbp) - Added Growatt EMS module
+  * (@jherby2k) - Align API and HASS Status module values
+  * (@mvaneijken) - Add MySQL logging module Port parameter
+  * (@ngardiner) - Refactor TWCManager structure to allow for entire project to be packaged into pypi packaging for easy install/upgrades
+  * (@jherby2k) - Add IotaWatt EMS interface
+  * (@mvaneijken) - Added P1 Monitor EMS module
+  * (@jherby2k) - Add support for HomeAssistant integration
+  * (@MikeBishop) - Add support for deleting tasks, avoid sending stop commands under some conditions to avoid unnecessary transitions
+
+## v1.2.2 - 2021-06-09
+
+  * (@ngardiner) - Added SmartPi EMS interface
+  * (@Saftwerk, @ngardiner) - Added Volkszahler EMS interface
+  * (@ngardiner) - Added functionality to Dummy module to emulate TWC communication to the point that Policy selection occurs
+  * (@MikeBishop) - Implement Policy Shortcut function to allow Charge Now to take immediate effect
+  * (@GMerg) - Added OpenWeatherMap EMS interface
+  * (@ngardiner) - Added VIN Management functionality, where vehicles can be allowed or denied charging based on VIN. With this, we introduce the ability to define vehicle groups, with future functionality allowing policy settings to be applied to these groups.
+  * (@ngardiner) - Addition of a debug interface which allows tuning advanced inner workings of TWCManager, and allows sending commands to TWCs.
+  * (@ngardiner) - Added support for Tesla MFA authentication flows
+  * (@MikeBishop) - Improve API error handling, removing transient error delays and replacing with an exponential backoff mechanism to avoid delaying other background tasks.
+  * (@MikeBishop) - Added debounce dampening for situations where intermittent consumption spikes / loads cause TWC to start and stop charging frequently.
+  * (@ngardiner) - Add new consumption offset handling which allows for dynamic configuration of offsets in Watts and Amps via web and API
+  * Bugfixes
+    * (@ngardiner) - Better handling of permissions issues when attempting to save settings.json - alerts user to check file permissions via Web Interface
+    * (@ngardiner) - Fixed issue with logging errors when a certain exception is raised in the Snapshot History function
+    * (@ngardiner) - Fixed issue with Modern web interface Charge Now setting not working
+    * (@ngardiner) - Fix behaviour of Stop Responding to Slaves charge stop mode, by re-enabling slave communication after 60 seconds
+    * (@ngardiner) - Fix issues with subtractChargerLoad when using one of the (few) EMS modules which only provide Generation values. Previously, we only subtracted the Charger Load from Consumption which doesn't work in Generation-only measurement environments.
+    * (@leeliu) - Fix TWC ID display for Modern theme which was truncating trailing zeros
+    * (@ngardiner) - Fix bug in Stop Responding to Slaves routine caused by incorrect reference to time function
 
 ## v1.2.1 - 2021-04-04
 

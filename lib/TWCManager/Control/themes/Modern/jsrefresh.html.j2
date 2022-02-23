@@ -1,8 +1,4 @@
 <script>
-    // enable tooltips
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
 
     // AJAJ refresh for getStatus API call
     $(document).ready(function() {
@@ -55,12 +51,14 @@
                     if (json["currentPolicy"] == "Charge Now") {
                         if ($("#start_chargenow").length) {
                             $("#start_chargenow").html("Update Charge Now");
-                            $("#cancel_chargenow").prop( "disabled", false);
+                            $("#cancel_chargenow").prop("disabled", false);
+                            $("#cancel_chargenow").removeClass("disabled");
                         }
                     } else {
                         if ($("#start_chargenow").length) {
                             $("#start_chargenow").html("Charge Now");
-                            $("cancel_chargenow").prop( "disabled", true );
+                            $("#cancel_chargenow").prop("disabled", true);
+                            $("#cancel_chargenow").addClass("disabled");
                         }
                     }
                 }
@@ -81,13 +79,26 @@
                     var json = $.parseJSON(data);
                     Object.keys(json).forEach(function(key) {
                         var slvtwc = json[key];
-                        var twc = '#' + slvtwc['TWCID']
+                        var twc = '#' + slvtwc['TWCID'].toLowerCase()
                         Object.keys(slvtwc).forEach(function(key) {
                           $(twc+'_'+key).html(slvtwc[key]);
                         });
+
+                        if ($(twc+'_lastBatterySOC').html() === '') {
+                            //no SOC data
+                            $(twc+'_socState').hide();
+                        } else {
+                            $(twc+'_socState').show();
+                        }
                     });
+                    
+		            var chargerAvailAmps = 0;
+		            var tot = json['total'];
+		            chargerAvailAmps = parseFloat(tot['lastAmpsOffered']);
+		            $('#chargerAvailAmps').html(chargerAvailAmps.toFixed(2));
                 }
             });
+
             setTimeout(requestSlaves, 3000);
         }
         requestSlaves();
@@ -102,7 +113,7 @@
                 url: "/api/chargeNow",
                 data: JSON.stringify({
                     chargeNowRate: $("#chargeNowRate").val(),
-                    chargeNowDuration: $("#chargeNowDuration").val()
+                    chargeNowDuration: ($("#chargeNowDuration").val()*60*60)
                 }),
                 dataType: "json"
             }).done( function(data) {
@@ -112,36 +123,4 @@
         });
     });
 
-    $(document).ready(function() {
-        $("#cancel_chargenow").click(function(e) {
-            e.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: "/api/cancelChargeNow",
-                data: {}
-            });
-        });
-    });
-
-    $(document).ready(function() {
-        $("#send_start_command").click(function(e) {
-            e.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: "/api/sendStartCommand",
-                data: {}
-            });
-        });
-    });
-
-    $(document).ready(function() {
-        $("#send_stop_command").click(function(e) {
-            e.preventDefault();
-            $.ajax({
-                type: "POST",
-                url: "/api/sendStopCommand",
-                data: {}
-            });
-        });
-    });
 </script>
